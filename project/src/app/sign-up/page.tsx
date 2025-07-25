@@ -1,5 +1,40 @@
+import logo from '../../../public/Screenshot 2025-06-27 194546.png';
+function Navbar() {
+  return (
+    <nav className="bg-[#4d7cfe] py-4 shadow-md">
+      <div className="container mx-auto flex justify-end items-center">
+        <img src={logo.src} alt="Logo" className="h-10 mr-auto" />
+         {/* Logo on the left side */}
+        <ul className="flex gap-12">
+          {['Home', 'Features', 'About Us', 'Contact Us', 'Login/Sign Up'].map((item, idx) => (
+            <li key={idx}>
+              <a
+                href="/"
+                className="text-white font-bold uppercase underline underline-offset-4 decoration-2 hover:opacity-90 transition"
+              >
+                {item}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </nav>
+  );
+}
+
+
+function Footer() {
+  return (
+    <footer className="bg-gray-900 text-gray-300 text-center py-4">
+      <p>© {new Date().getFullYear()} MyApp. All rights reserved.</p>
+    </footer>
+  );
+}
+
 export default function SignupPage() {
   return (
+    <>
+    <Navbar />
     <div className="min-h-screen flex items-center justify-center bg-white px-6 py-12">
       <div className="max-w-6xl w-full grid md:grid-cols-2 gap-8 items-center">
         {/* Left Illustration */}
@@ -82,5 +117,7 @@ export default function SignupPage() {
         </div>
       </div>
     </div>
+    <Footer />
+    </>
   );
 }
