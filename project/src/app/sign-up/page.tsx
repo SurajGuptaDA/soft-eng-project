@@ -1,3 +1,6 @@
+"use client";
+import { useState } from 'react';
+import { AiFillEye, AiFillEyeInvisible } from 'react-icons/ai';
 import logo from '../../../public/Screenshot 2025-06-27 194546.png';
 function Navbar() {
   return (
@@ -6,10 +9,12 @@ function Navbar() {
         <img src={logo.src} alt="Logo" className="h-10 mr-auto" />
          {/* Logo on the left side */}
         <ul className="flex gap-12">
-          {['Home', 'Features', 'About Us', 'Contact Us', 'Login/Sign Up'].map((item, idx) => (
+          {['Home', 'Features', 'About Us', 'Contact Us', 'Login'].map((item, idx) => (
             <li key={idx}>
               <a
-                href="/"
+                href={
+                  item === 'Home' ? '/' : item === 'Features' ? '/features' : item === 'About Us' ? '/about' : item === 'Contact Us' ? '/contact' : '/log-in'
+                }
                 className="text-white font-bold uppercase underline underline-offset-4 decoration-2 hover:opacity-90 transition"
               >
                 {item}
@@ -32,6 +37,32 @@ function Footer() {
 }
 
 export default function SignupPage() {
+
+  const [formData, setFormData] = useState({
+    fullName: '',
+    email: '',
+    phoneNumber: '',
+    password: '',
+    confirmPassword: '',
+    role: {
+      seniorCitizen: false,
+      doctor: false,
+      careGiver: false,
+    },
+  });
+  const [showPassword, setShowPassword] = useState(false);
+  const [isAgree, setIsAgree] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!isAgree) {
+      alert('Please agree to the Terms & Conditions');
+      return;
+    }
+    
+    // Handle form submission logic here
+    console.log('Form submitted:', formData);
+  }
   return (
     <>
     <Navbar />
@@ -49,38 +80,66 @@ export default function SignupPage() {
           </h2>
           <p className="mb-6 font-medium text-black">Create your account</p>
 
-          <form className="space-y-4 text-black">
+          <form className="space-y-4 text-black" onSubmit={handleSubmit}>
             <input
               type="text"
               placeholder="Full Name"
+              required
+              onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
               className="w-full border-2 border-gray-300 rounded-lg px-4 py-2 focus:outline-blue-500"
             />
             <input
               type="email"
               placeholder="Email Address"
+              required
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               className="w-full border-2 border-gray-300 rounded-lg px-4 py-2 focus:outline-blue-500"
             />
             <input
               type="tel"
               placeholder="Phone Number"
+              required
+              onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
               className="w-full border-2 border-gray-300 rounded-lg px-4 py-2 focus:outline-blue-500"
             />
+
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                placeholder="Password"
+                required
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                className="w-full border-2 border-gray-300 rounded-lg px-4 py-2 focus:outline-blue-500"
+                />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 transform -translate-y-1/2"
+                >
+                {showPassword ? <AiFillEyeInvisible /> : <AiFillEye />}
+              </button>
+            </div>
+
             <input
               type="password"
-              placeholder="Password"
-              className="w-full border-2 border-gray-300 rounded-lg px-4 py-2 focus:outline-blue-500"
-            />
-            <input
-              type="password"
+              required
               placeholder="Confirm Password"
               className="w-full border-2 border-gray-300 rounded-lg px-4 py-2 focus:outline-blue-500"
-            />
+              onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+              />
+            
+            {formData.password !== formData.confirmPassword && (
+              <p className="text-red-500 text-sm">Passwords do not match</p>
+            )}
 
             {/* Role Selection */}
             <div>
               <p className="mb-1 font-semibold">Select Role :</p>
               <div className="flex gap-4 text-sm">
-                <label><input type="checkbox" className="mr-1" />Senior Citizen</label>
+                <label><input type="checkbox" className="mr-1" onChange={(e) => setFormData({ ...formData, role: {
+                  ...formData.role,
+                  seniorCitizen: e.target.checked
+                } })}/>Senior Citizen</label>
                 <label><input type="checkbox" className="mr-1" />Doctor</label>
                 <label><input type="checkbox" className="mr-1" />Care Giver</label>
               </div>
@@ -92,7 +151,8 @@ export default function SignupPage() {
                 type="checkbox"
                 id="terms"
                 className="mr-2 accent-green-600"
-                defaultChecked
+                onChange={(e) => setIsAgree(e.target.checked)}
+                checked={isAgree}
                 title="Agree to the Terms & Conditions"
               />
               <label htmlFor="terms">I Agree To The Terms & Conditions</label>

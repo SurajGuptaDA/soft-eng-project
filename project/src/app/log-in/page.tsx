@@ -6,10 +6,12 @@ function Navbar() {
         <img src={logo.src} alt="Logo" className="h-10 mr-auto" />
          {/* Logo on the left side */}
         <ul className="flex gap-12">
-          {['Home', 'Features', 'About Us', 'Contact Us', 'Login/Sign Up'].map((item, idx) => (
+          {['Home', 'Features', 'About Us', 'Contact Us', 'Sign Up'].map((item, idx) => (
             <li key={idx}>
               <a
-                href="/"
+                href={
+                  item === 'Home' ? '/' : item === 'Features' ? '/features' : item === 'About Us' ? '/about' : item === 'Contact Us' ? '/contact' : '/sign-up'
+                }
                 className="text-white font-bold uppercase underline underline-offset-4 decoration-2 hover:opacity-90 transition"
               >
                 {item}
