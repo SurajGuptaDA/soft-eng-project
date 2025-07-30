@@ -1,6 +1,8 @@
 "use client";
 import { useState } from 'react';
+import { useRouter} from 'next/navigation';
 import { AiFillEye, AiFillEyeInvisible } from 'react-icons/ai';
+import axios from 'axios';
 import logo from '../../../public/Screenshot 2025-06-27 194546.png';
 function Navbar() {
   return (
@@ -37,18 +39,14 @@ function Footer() {
 }
 
 export default function SignupPage() {
-
+  const router = useRouter();
   const [formData, setFormData] = useState({
-    fullName: '',
+    name: '',
     email: '',
-    phoneNumber: '',
+    phone: '',
     password: '',
     confirmPassword: '',
-    role: {
-      seniorCitizen: false,
-      doctor: false,
-      careGiver: false,
-    },
+    role: ''
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isAgree, setIsAgree] = useState(false);
@@ -62,6 +60,12 @@ export default function SignupPage() {
     
     // Handle form submission logic here
     console.log('Form submitted:', formData);
+    const res = await axios.post('http://localhost:5000/create-user', formData);
+    if (res.status === 200) {
+      alert('Signup successful!');
+      // Redirect to login page or home page
+      router.push('/log-in');
+    }
   }
   return (
     <>
@@ -85,7 +89,7 @@ export default function SignupPage() {
               type="text"
               placeholder="Full Name"
               required
-              onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               className="w-full border-2 border-gray-300 rounded-lg px-4 py-2 focus:outline-blue-500"
             />
             <input
@@ -99,7 +103,7 @@ export default function SignupPage() {
               type="tel"
               placeholder="Phone Number"
               required
-              onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
+              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
               className="w-full border-2 border-gray-300 rounded-lg px-4 py-2 focus:outline-blue-500"
             />
 
@@ -136,12 +140,9 @@ export default function SignupPage() {
             <div>
               <p className="mb-1 font-semibold">Select Role :</p>
               <div className="flex gap-4 text-sm">
-                <label><input type="checkbox" className="mr-1" onChange={(e) => setFormData({ ...formData, role: {
-                  ...formData.role,
-                  seniorCitizen: e.target.checked
-                } })}/>Senior Citizen</label>
-                <label><input type="checkbox" className="mr-1" />Doctor</label>
-                <label><input type="checkbox" className="mr-1" />Care Giver</label>
+                <label><input type="checkbox" className="mr-1" value={'senior'} onChange={(e) => setFormData({ ...formData, role: e.target.value })}/>Senior Citizen</label>
+                <label><input type="checkbox" className="mr-1" value={'doctor'} onChange={(e) => setFormData({ ...formData, role: e.target.value })} />Doctor</label>
+                <label><input type="checkbox" className="mr-1" value={'caregiver'} onChange={(e) => setFormData({ ...formData, role: e.target.value })} />Care Giver</label>
               </div>
             </div>
 
