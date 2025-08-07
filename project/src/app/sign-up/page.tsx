@@ -46,7 +46,14 @@ export default function SignupPage() {
     phone: '',
     password: '',
     confirmPassword: '',
-    role: ''
+    role: '', 
+    address: '', 
+    dob: '', 
+    specialization: '', 
+    licenceNo: '', 
+    pincode: '', 
+    pharmacyName: '', 
+    region: ''
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isAgree, setIsAgree] = useState(false);
@@ -60,8 +67,9 @@ export default function SignupPage() {
     
     // Handle form submission logic here
     console.log('Form submitted:', formData);
-    const res = await axios.post('http://localhost:5000/create-user', formData);
-    if (res.status === 200) {
+    const res = await axios.post('http://localhost:5000/register', formData);
+    console.log(res)
+    if (res.status === 201) {
       alert('Signup successful!');
       // Redirect to login page or home page
       router.push('/log-in');
@@ -85,6 +93,19 @@ export default function SignupPage() {
           <p className="mb-6 font-medium text-black">Create your account</p>
 
           <form className="space-y-4 text-black" onSubmit={handleSubmit}>
+
+            {/* Role Selection */}
+            <div>
+              <p className="mb-1 font-semibold">Select Role :</p>
+              <div className="flex gap-4 text-sm">
+
+                <label><input type="radio" name='role' className="mr-1" value={'senior'} onChange={(e) => setFormData({ ...formData, role: e.target.value })}/>Senior Citizen</label>
+                <label><input type="radio" name='role' className="mr-1" value={'doctor'} onChange={(e) => setFormData({ ...formData, role: e.target.value })} />Doctor</label>
+                <label><input type="radio" name='role' className="mr-1" value={'pharmacist'} onChange={(e) => setFormData({ ...formData, role: e.target.value })} />Pharmacist</label>
+                <label><input type="radio" name='role' className="mr-1" value={'delivery'} onChange={(e) => setFormData({ ...formData, role: e.target.value })} />Delivery</label>
+              </div>
+            </div>
+
             <input
               type="text"
               placeholder="Full Name"
@@ -92,6 +113,34 @@ export default function SignupPage() {
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               className="w-full border-2 border-gray-300 rounded-lg px-4 py-2 focus:outline-blue-500"
             />
+            { formData.role === 'senior' && (<input
+                                      type="text"
+                                      placeholder="DOB (YYYY-MM-DD)"
+                                      required
+                                      onChange={(e) => setFormData({ ...formData, dob: e.target.value })}
+                                      className="w-full border-2 border-gray-300 rounded-lg px-4 py-2 focus:outline-blue-500"
+                                    />)}
+            { (formData.role === 'senior' || formData.role === 'pharmacist') && (<input
+                                      type="text"
+                                      placeholder="Address"
+                                      required
+                                      onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                                      className="w-full border-2 border-gray-300 rounded-lg px-4 py-2 focus:outline-blue-500"
+                                    />)}
+            { formData.role === 'pharmacist' && (<input
+                                      type="text"
+                                      placeholder="Pincode"
+                                      required
+                                      onChange={(e) => setFormData({ ...formData, pincode: e.target.value })}
+                                      className="w-full border-2 border-gray-300 rounded-lg px-4 py-2 focus:outline-blue-500"
+                                    />)}
+            { formData.role === 'pharmacist' && (<input
+                                      type="text"
+                                      placeholder="Pharmacy Name"
+                                      required
+                                      onChange={(e) => setFormData({ ...formData, pharmacyName: e.target.value })}
+                                      className="w-full border-2 border-gray-300 rounded-lg px-4 py-2 focus:outline-blue-500"
+                                    />)}
             <input
               type="email"
               placeholder="Email Address"
@@ -106,6 +155,30 @@ export default function SignupPage() {
               onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
               className="w-full border-2 border-gray-300 rounded-lg px-4 py-2 focus:outline-blue-500"
             />
+            { formData.role === 'doctor' && (
+              <input
+              type="text"
+              placeholder="Specialization"
+              required
+              onChange={(e) => setFormData({ ...formData, specialization: e.target.value })}
+              className="w-full border-2 border-gray-300 rounded-lg px-4 py-2 focus:outline-blue-500"
+            />)}
+            { formData.role === 'doctor' && (
+              <input
+              type="text"
+              placeholder="Licence No."
+              required
+              onChange={(e) => setFormData({ ...formData, licenceNo: e.target.value })}
+              className="w-full border-2 border-gray-300 rounded-lg px-4 py-2 focus:outline-blue-500"
+            />)}
+            { formData.role === 'delivery' && (
+              <input
+              type="text"
+              placeholder="Region"
+              required
+              onChange={(e) => setFormData({ ...formData, region: e.target.value })}
+              className="w-full border-2 border-gray-300 rounded-lg px-4 py-2 focus:outline-blue-500"
+            />)}
 
             <div className="relative">
               <input
@@ -136,15 +209,6 @@ export default function SignupPage() {
               <p className="text-red-500 text-sm">Passwords do not match</p>
             )}
 
-            {/* Role Selection */}
-            <div>
-              <p className="mb-1 font-semibold">Select Role :</p>
-              <div className="flex gap-4 text-sm">
-                <label><input type="checkbox" className="mr-1" value={'senior'} onChange={(e) => setFormData({ ...formData, role: e.target.value })}/>Senior Citizen</label>
-                <label><input type="checkbox" className="mr-1" value={'doctor'} onChange={(e) => setFormData({ ...formData, role: e.target.value })} />Doctor</label>
-                <label><input type="checkbox" className="mr-1" value={'caregiver'} onChange={(e) => setFormData({ ...formData, role: e.target.value })} />Care Giver</label>
-              </div>
-            </div>
 
             {/* T&C */}
             <div className="flex items-center text-sm">

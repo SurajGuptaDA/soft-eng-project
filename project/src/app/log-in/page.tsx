@@ -1,3 +1,5 @@
+"use client";
+import {useState} from 'react';
 import logo from '../../../public/Screenshot 2025-06-27 194546.png';
 function Navbar() {
   return (
@@ -35,6 +37,28 @@ function Footer() {
 
 
 export default function LoginPage() {
+  const [formData, setFormData] = useState({
+    username: '', 
+    password: ''
+  })
+
+  async function submitForm(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!isAgree) {
+      alert('Please agree to the Terms & Conditions');
+      return;
+    }
+    
+    // Handle form submission logic here
+    console.log('Form submitted:', formData);
+    const res = await axios.post('http://localhost:5000/login', formData);
+    console.log(res)
+    if (res.status === 201) {
+      alert('Signup successful!');
+      // Redirect to login page or home page
+      router.push('/log-in');
+    }
+  }
   return (
     <>
     <Navbar />
@@ -65,6 +89,7 @@ export default function LoginPage() {
                 type="email"
                 placeholder="Email Address"
                 className="w-full outline-none bg-transparent"
+                onChange={(e) => setFormData({...formData, username: e.target.value})}
               />
             </div>
 
@@ -75,6 +100,7 @@ export default function LoginPage() {
                 type="password"
                 placeholder="Password"
                 className="w-full outline-none bg-transparent"
+                onChange={(e) => setFormData({...formData, password: e.target.value})}
               />
             </div>
 
