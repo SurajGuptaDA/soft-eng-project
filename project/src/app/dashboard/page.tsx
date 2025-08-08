@@ -1,4 +1,55 @@
+"use client";
+import {useState, useEffect} from 'react';
+import axios from 'axios';
 export default function DashboardPage() {
+  const [medicines, setMedicines] = useState([
+    {
+      medicineName: 'Loading...',
+      todayDoses: {timeSlot: 'Loading...'}
+    }
+  ]);
+  const [userData, setUserData] = useState({
+    id: null,
+    username: 'Loading...',
+    email: 'Loading...',
+    phone: 'Loading...'
+  });
+  const [prescriptions, setPrescriptions] = useState([
+    {
+      prescriptionId: 'Loading...',
+      patientName: 'Loading...',
+      dateUploaded: 'Loading...',
+      doctorName: 'Loading...',
+      status: 'Loading...'
+    }
+  ]);
+  useEffect(() => {
+    const fetchId = async () => {
+      // axios.get('/medicines/today/')
+      const res = await axios.get('/get-id');
+      if (res.status === 200) {
+        setUserData(res.data.userData);
+      } else {
+        console.error('Failed to fetch user ID');
+      }
+    };
+    fetchId();
+    const fetchMedicines = async () => {
+      try {
+        const res = await axios.get(`/medicines/today/${userData?.id}`);
+        if (res.status === 200) {
+          setMedicines(res.data);
+        } else {
+          console.error('Failed to fetch medicines');
+        }
+      } catch (error) {
+        console.error('Error fetching medicines:', error);
+      }
+    };
+    if (userData) {
+      fetchMedicines();
+    }
+  }, []);
   return (
     <div className="min-h-screen flex flex-col bg-white">
       {/* NAVBAR */}
@@ -6,13 +57,12 @@ export default function DashboardPage() {
         <div className="text-xl font-bold">Sandpiper Crossing</div>
         <ul className="flex gap-6 text-sm font-semibold uppercase">
           <li><a href="#">Home</a></li>
-          <li><a href="#">Upload Prescription</a></li>
-          <li><a href="#">Compare Medicine</a></li>
+          <li><a href="/uploadPrescription">Upload Prescription</a></li>
           <li><a href="#">Call Doctor</a></li>
-          <li><a href="#">My Orders</a></li>
+          <li><a href="/trackOrder">My Orders</a></li>
           <li><a href="#">Health Overview</a></li>
         </ul>
-        <button className="bg-white text-blue-600 px-4 py-1 rounded-full text-sm font-semibold">Login/Signup</button>
+        <button className="bg-white text-blue-600 px-4 py-1 rounded-full text-sm font-semibold">Edit Details</button>
       </nav>
 
       {/* MAIN LAYOUT */}
@@ -22,7 +72,7 @@ export default function DashboardPage() {
           <div className="w-24 h-24 bg-white rounded-full border border-gray-400 mb-2 flex items-center justify-center">
             <span className="text-4xl">👤</span>
           </div>
-          <div className="text-center bg-white text-sm font-medium px-2 py-1 rounded">USERNAME</div>
+          <div className="text-center bg-white text-sm font-medium px-2 py-1 rounded">{userData.username}</div>
         </aside>
 
         {/* CENTER CONTENT */}
@@ -31,19 +81,21 @@ export default function DashboardPage() {
           <section className="mb-8">
             <h2 className="text-2xl font-bold text-blue-900 mb-2 text-center">TODAY'S REMAINDER</h2>
             <div className="flex justify-center gap-4 mb-4">
-              <div className="bg-gray-100 px-4 py-1 rounded">Jun 10, 2024</div>
-              <div className="bg-gray-100 px-4 py-1 rounded">9:41 AM</div>
+              <div className="bg-gray-100 px-4 py-1 rounded">{new Date().toDateString()}</div>
+              <div className="bg-gray-100 px-4 py-1 rounded">{new Date().toTimeString()}</div>
             </div>
-            {[1, 2].map((_, i) => (
-              <div key={i} className="border-2 rounded-full flex justify-between items-center px-6 py-3 mb-3 max-w-3xl mx-auto">
-                <div className="flex items-center gap-4">
-                  <span className="text-green-500 text-xl">✔️</span>
-                  <span className="text-red-500 text-xl">❌</span>
-                  <span>PILL NAME , TIME</span>
+            {medicines.length > 0 && (
+              medicines.map((med, i) => (
+                <div key={i} className="border-2 rounded-full flex justify-between items-center px-6 py-3 mb-3 max-w-3xl mx-auto">
+                  <div className="flex items-center gap-4">
+                    <span className="text-green-500 text-xl">✔️</span>
+                    <span className="text-red-500 text-xl">❌</span>
+                    <span>{med.medicineName} , {med.todayDoses.timeSlot}</span>
+                  </div>
+                  <span className="bg-gray-200 px-4 py-1 rounded">PILL IMAGE</span>
                 </div>
-                <span className="bg-gray-200 px-4 py-1 rounded">PILL IMAGE</span>
-              </div>
-            ))}
+              ))
+            )}
           </section>
 
           {/* PRESCRIPTION STATUS */}
@@ -56,7 +108,6 @@ export default function DashboardPage() {
                     <th className="border px-4 py-2">PRESCRIPTION ID</th>
                     <th className="border px-4 py-2">PATIENT NAME</th>
                     <th className="border px-4 py-2">DATE UPLOADED</th>
-                    <th className="border px-4 py-2">DOCTOR'S NAME</th>
                     <th className="border px-4 py-2">VIEW/DOWNLOAD</th>
                     <th className="border px-4 py-2">STATUS</th>
                   </tr>
@@ -66,7 +117,6 @@ export default function DashboardPage() {
                     <td className="border px-4 py-2">1</td>
                     <td className="border px-4 py-2">Name</td>
                     <td className="border px-4 py-2">Date</td>
-                    <td className="border px-4 py-2">Prescribed by</td>
                     <td className="border px-4 py-2 text-blue-600 underline">Click to view/download</td>
                     <td className="border px-4 py-2">
                       <select
