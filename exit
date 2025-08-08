@@ -1,0 +1,47 @@
+[33mcommit e30b9d843ec7e6aad668e7b82c7bf1442925cfc7[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m, [m[1;31morigin/master[m[33m)[m
+Author: Suraj Gupta <sg704992@gmail.com>
+Date:   Thu Aug 7 16:32:46 2025 +0530
+
+    sign-up page done
+
+[33mcommit 325b657b77c2a457b8d3de3494d42dd5df697e4c[m
+Author: Suraj Gupta <22f2001606@ds.study.iitm.ac.in>
+Date:   Wed Jul 30 17:44:04 2025 +0530
+
+    signup update 3
+
+[33mcommit fef5b6dd7543b83804c8168f3aa8a9dfbcb2243d[m
+Author: Suraj Gupta <22f2001606@ds.study.iitm.ac.in>
+Date:   Wed Jul 30 17:28:42 2025 +0530
+
+    login signup update 2
+
+[33mcommit 5cfc43a993daf5164026e03a87e0d9b36efb59bd[m
+Author: Suraj Gupta <22f2001606@ds.study.iitm.ac.in>
+Date:   Wed Jul 30 14:44:49 2025 +0530
+
+    commit
+
+[33mcommit 3c14c19534638c2e142f1aa6e71c9c29cfa38dd1[m
+Author: Suraj Gupta <22f2001606@ds.study.iitm.ac.in>
+Date:   Fri Jul 25 21:27:29 2025 +0530
+
+    complete frontend
+
+[33mcommit 12ac66277e9adfc57b142694fd15d917f18b85c8[m
+Author: Suraj Gupta <sg704992@gmail.com>
+Date:   Fri Jul 4 15:19:26 2025 +0530
+
+    added more pages
+
+[33mcommit 083d2c3d3404c5b04bb721a33279a4109d1ad765[m
+Author: Suraj Gupta <sg704992@gmail.com>
+Date:   Fri Jun 27 20:19:13 2025 +0530
+
+    added dashboard page also added login/signup
+
+[33mcommit 6b133d07a274bb018af1a6c38daef4c84caeda5c[m
+Author: Suraj Gupta <50785299+SurajGuptaDA@users.noreply.github.com>
+Date:   Fri Jun 27 19:23:50 2025 +0530
+
+    Create README.md

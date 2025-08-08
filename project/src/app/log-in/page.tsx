@@ -1,5 +1,7 @@
 "use client";
 import {useState} from 'react';
+import {useRouter} from 'next/navigation';
+import axios from 'axios';
 import logo from '../../../public/Screenshot 2025-06-27 194546.png';
 function Navbar() {
   return (
@@ -37,26 +39,30 @@ function Footer() {
 
 
 export default function LoginPage() {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     username: '', 
     password: ''
   })
 
-  async function submitForm(e: React.FormEvent<HTMLFormElement>) {
+  async function handleLogin(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (!isAgree) {
-      alert('Please agree to the Terms & Conditions');
-      return;
-    }
+    const sToken = Buffer.from(`${formData.username}:${formData.password}`).toString('base64');
     
     // Handle form submission logic here
     console.log('Form submitted:', formData);
-    const res = await axios.post('http://localhost:5000/login', formData);
+    const res = await axios.post(
+      'http://localhost:5000/login',
+      {},
+      {
+        auth: formData,
+      }
+    );
     console.log(res)
-    if (res.status === 201) {
-      alert('Signup successful!');
+    if (res.status === 200) {
+      alert('Login successful!');
       // Redirect to login page or home page
-      router.push('/log-in');
+      router.push('/dashboard');
     }
   }
   return (
@@ -81,7 +87,7 @@ export default function LoginPage() {
           </h2>
           <p className="mb-6 font-medium">Log In to Your Account</p>
 
-          <form className="space-y-4">
+          <form className="space-y-4" onSubmit={handleLogin}>
             {/* Email */}
             <div className="flex items-center border-2 border-gray-300 rounded-lg px-4 py-2">
               <span className="mr-2 text-blue-600 text-xl">📧</span>
