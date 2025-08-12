@@ -5,9 +5,9 @@ export default function DoctorConsultPage() {
       <nav className="bg-[#4d7cfe] text-white px-6 py-4 flex justify-between items-center">
         <div className="text-xl font-bold">Sandpiper Crossing</div>
         <ul className="flex gap-6 text-sm font-semibold">
-          <li><a href="#">Dashboard</a></li>
-          <li><a href="#">Orders</a></li>
-          <li><a href="#">Upload Rx</a></li>
+          <li><a href="/dashboard">Dashboard</a></li>
+          <li><a href="/trackOrder">Orders</a></li>
+          <li><a href="/uploadPrescription">Upload Rx</a></li>
           <li><a href="#">Help</a></li>
         </ul>
         <button className="bg-green-500 px-4 py-1 text-white text-sm rounded-full">Logout</button>

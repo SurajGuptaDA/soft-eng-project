@@ -1,5 +1,5 @@
 "use client";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter} from 'next/navigation';
 import { AiFillEye, AiFillEyeInvisible } from 'react-icons/ai';
 import axios from 'axios';
@@ -57,6 +57,25 @@ export default function SignupPage() {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isAgree, setIsAgree] = useState(false);
+
+  useEffect(() => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        // If token exists, verify it
+        axios.get('http://localhost:5000/verifyToken', {
+          headers: {
+            'x-access-token': token
+          }
+        })
+        .then(response => {
+          console.log('Token is valid:', response.data);
+          router.push('/dashboard'); // Redirect to dashboard if token is valid
+        })
+        .catch(error => {
+          console.error('Token verification failed:', error);
+        });
+      }
+    }, [router]);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();

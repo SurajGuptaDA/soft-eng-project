@@ -1,13 +1,14 @@
 "use client";
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 import {useRouter} from 'next/navigation';
 import axios from 'axios';
+import Image from 'next/image';
 import logo from '../../../public/Screenshot 2025-06-27 194546.png';
 function Navbar() {
   return (
     <nav className="bg-[#4d7cfe] py-4 shadow-md">
       <div className="container mx-auto flex justify-end items-center">
-        <img src={logo.src} alt="Logo" className="h-10 mr-auto" />
+        <Image src={logo} alt="Logo" className="h-10 mr-auto" height={40} />
          {/* Logo on the left side */}
         <ul className="flex gap-12">
           {['Home', 'Features', 'About Us', 'Contact Us', 'Sign Up'].map((item, idx) => (
@@ -45,9 +46,28 @@ export default function LoginPage() {
     password: ''
   })
 
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      // If token exists, verify it
+      axios.get('http://localhost:5000/verifyToken', {
+        headers: {
+          'x-access-token': token
+        }
+      })
+      .then(response => {
+        console.log('Token is valid:', response.data);
+        router.push('/dashboard'); // Redirect to dashboard if token is valid
+      })
+      .catch(error => {
+        console.error('Token verification failed:', error);
+      });
+    }
+  }, [router]);
+
   async function handleLogin(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const sToken = Buffer.from(`${formData.username}:${formData.password}`).toString('base64');
+    // const sToken = Buffer.from(`${formData.username}:${formData.password}`).toString('base64');
     
     // Handle form submission logic here
     console.log('Form submitted:', formData);
@@ -60,8 +80,8 @@ export default function LoginPage() {
     );
     console.log(res)
     if (res.status === 200) {
-      alert('Login successful!');
       // Redirect to login page or home page
+      localStorage.setItem('token', res.data.token);
       router.push('/dashboard');
     }
   }
