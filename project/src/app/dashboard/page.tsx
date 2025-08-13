@@ -5,6 +5,8 @@ export default function DashboardPage() {
   const [medicines, setMedicines] = useState<{medicineName: string, todayDoses: {timeSlot: string}}[]>([]);
   const [userData, setUserData] = useState<{userId: string, username: string, email: string, phone: string} | null>(null);
   const [prescriptions, setPrescriptions] = useState<{prescriptionId: string, patientName: string, dateUploaded: string, doctorName: string}[]>([]);
+  const [currentDate] = useState<string>(new Date().toDateString());
+  const [currentTime] = useState<string>(new Date().toLocaleTimeString());
 
   // Runs only once to get user data
 useEffect(() => {
@@ -73,8 +75,8 @@ useEffect(() => {
           <section className="mb-8">
             <h2 className="text-2xl font-bold text-blue-900 mb-2 text-center">TODAY&apos;S REMAINDER</h2>
             <div className="flex justify-center gap-4 mb-4">
-              <div className="bg-gray-100 px-4 py-1 rounded">{new Date().toDateString()}</div>
-              <div className="bg-gray-100 px-4 py-1 rounded">{new Date().toTimeString()}</div>
+              <div className="bg-gray-100 px-4 py-1 rounded">{currentDate}</div>
+              <div className="bg-gray-100 px-4 py-1 rounded">{currentTime}</div>
             </div>
             {medicines.length > 0 && (
               medicines.map((med, i) => (
@@ -148,8 +150,8 @@ useEffect(() => {
             <div className="bg-white border rounded p-4">
               <p className="text-sm font-semibold mb-2">June 2024</p>
               <div className="grid grid-cols-7 gap-1 text-sm text-center text-gray-700">
-                {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d) => (
-                  <div key={d} className="font-bold">{d}</div>
+                {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
+                  <div key={i} className="font-bold">{d}</div>
                 ))}
                 {Array.from({ length: 30 }).map((_, i) => (
                   <div

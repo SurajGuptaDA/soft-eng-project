@@ -82,7 +82,14 @@ export default function LoginPage() {
     if (res.status === 200) {
       // Redirect to login page or home page
       localStorage.setItem('token', res.data.token);
-      router.push('/dashboard');
+      localStorage.setItem('role', res.data.role);
+      if (res.data.role === 'senior') {
+        router.push('/dashboard');
+      } else if (res.data.role === 'pharmacist') {
+        router.push('/pharmacyDashboard');
+      } else if (res.data.role === 'delivery') {
+        router.push('/deliveryDashboard');
+      }
     }
   }
   return (
