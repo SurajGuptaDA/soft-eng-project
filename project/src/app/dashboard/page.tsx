@@ -4,7 +4,7 @@ import axios from 'axios';
 export default function DashboardPage() {
   const [medicines, setMedicines] = useState<{medicineName: string, todayDoses: {timeSlot: string}}[]>([]);
   const [userData, setUserData] = useState<{userId: string, username: string, email: string, phone: string} | null>(null);
-  const [prescriptions, setPrescriptions] = useState<{prescriptionId: string, patientName: string, dateUploaded: string, doctorName: string}[]>([]);
+  const [prescriptions, setPrescriptions] = useState<{id: string, customerName: string, date: string}[]>([]);
   const [currentDate] = useState<string>(new Date().toDateString());
   const [currentTime] = useState<string>(new Date().toLocaleTimeString());
 
@@ -34,7 +34,10 @@ useEffect(() => {
   };
 
   const fetchPrescriptions = async () => {
-    const res = await axios.get(`http://localhost:5000/prescriptions/${userData.userId}`);
+    const res = await axios.get(`http://localhost:5000/get-senior-prescriptions/${userData.userId}`, {
+      withCredentials: true,
+      headers: { 'x-access-token': localStorage.getItem('token') }
+    });
     if (res.status === 200) {
       setPrescriptions(res.data);
     }
@@ -110,9 +113,9 @@ useEffect(() => {
                 <tbody>
                   {prescriptions.length > 0 && prescriptions.map((prescription, index) => (
                     <tr key={index}>
-                      <td className="border px-4 py-2">{prescription.prescriptionId}</td>
-                      <td className="border px-4 py-2">{prescription.patientName}</td>
-                      <td className="border px-4 py-2">{new Date(prescription.dateUploaded).toLocaleDateString()}</td>
+                      <td className="border px-4 py-2">{prescription.id}</td>
+                      <td className="border px-4 py-2">{prescription.customerName}</td>
+                      <td className="border px-4 py-2">{new Date(prescription.date).toLocaleDateString()}</td>
                       <td className="border px-4 py-2 text-blue-600 underline cursor-pointer">Click to view/download</td>
                       <td className="border px-4 py-2">
                         <select
