@@ -7,7 +7,6 @@ import { useRouter } from "next/navigation";
 
 export default function UploadPrescriptionPage() {
   const [file, setFile] = useState<File | null>(null);
-  const [userData, setUserData] = useState<{userId: string, name: string, email: string, phone: string} | null>(null);
   const router = useRouter();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -17,24 +16,23 @@ export default function UploadPrescriptionPage() {
     }
   };
   useEffect(() => {
-  const token = localStorage.getItem('token');
-  if (!token) router.push('/log-in');
-  const fetchId = async () => {
-    try {const res = await axios.get('http://localhost:5000/current-senior-details', {
-      withCredentials: true,
-      headers: { 'x-access-token': token }
-    });
-    if (res.status === 200) {
-      setUserData(res.data.userData);
-      console.log("User Data:", res.data.userData);
+    const token = localStorage.getItem('token');
+    if (token) {
+      // If token exists, verify it
+      axios.get('http://localhost:5000/verifyToken', {
+        headers: {
+          'x-access-token': token
+        }
+      })
+      .then(response => {
+        console.log('Token is valid:', response.data);
+        router.push('/dashboard'); // Redirect to dashboard if token is valid
+      })
+      .catch(error => {
+        console.error('Token verification failed:', error);
+      });
     }
-  } catch (error) {
-    console.error("Error fetching user data:", error);
-    router.push('/log-in');
-  }
-  };
-  fetchId();
-}, []);
+  }, [router]);
 
   async function handleSubmit() {
     if (!file) return;
@@ -69,12 +67,13 @@ export default function UploadPrescriptionPage() {
       {/* Navbar */}
       <nav className="bg-[#4d7cfe] text-white px-6 py-4 flex justify-between items-center">
         <div className="text-xl font-bold">Sandpiper Crossing</div>
-        <ul className="flex gap-6 text-sm font-semibold">
-          <li><a href="/dashboard">Dashboard</a></li>
-          <li><a href="/trackOrder">Orders</a></li>
-          <li><a href="/help">Help</a></li>
-        </ul>
-        <button className="bg-green-500 px-4 py-1 text-white text-sm rounded-full" onClick={handleLogout}>Logout</button>
+        <div className="flex items-center gap-6">
+          <ul className="flex gap-6 text-sm font-semibold">
+            <li><a href="/dashboard">Dashboard</a></li>
+            <li><a href="/help">Help</a></li>
+            <li><button className="bg-green-500 px-4 py-1 text-white text-sm rounded-full" onClick={handleLogout}>Logout</button></li>
+          </ul>
+        </div>
       </nav>
 
       {/* Content */}

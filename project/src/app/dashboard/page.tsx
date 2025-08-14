@@ -1,7 +1,65 @@
 "use client";
-import {useState, useEffect} from 'react';
+import React, {useState, useEffect} from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
+
+// Dummy CalendarWidget component
+function CalendarWidget() {
+  return (
+    <div className="bg-white rounded shadow p-4 text-center">
+      <div>
+        <div className="font-bold text-lg mb-2">
+          {new Date().toLocaleString('default', { month: 'long', year: 'numeric' })}
+        </div>
+        <table className="w-full text-center">
+          <thead>
+        <tr>
+          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+            <th key={day} className="py-1 text-xs text-gray-600">{day}</th>
+          ))}
+        </tr>
+          </thead>
+          <tbody>
+        {(() => {
+          const now = new Date();
+          const year = now.getFullYear();
+          const month = now.getMonth();
+          const firstDay = new Date(year, month, 1).getDay();
+          const daysInMonth = new Date(year, month + 1, 0).getDate();
+          const weeks: React.ReactNode[] = [];
+          let day = 1 - firstDay;
+          for (let w = 0; w < 6; w++) {
+            const days: React.ReactElement[] = [];
+            for (let d = 0; d < 7; d++, day++) {
+          if (day < 1 || day > daysInMonth) {
+            days.push(<td key={d} className="py-1 text-gray-300"> </td>);
+          } else {
+            const isToday =
+              day === now.getDate() &&
+              month === now.getMonth() &&
+              year === now.getFullYear();
+            days.push(
+              <td
+            key={d}
+            className={`py-1 ${isToday ? 'bg-blue-500 text-white rounded-full' : 'text-gray-800'}`}
+              >
+            {day}
+              </td>
+            );
+          }
+            }
+            weeks.push(<tr key={w}>{days}</tr>);
+            if (day > daysInMonth) break;
+          }
+          return weeks;
+        })()}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
 export default function DashboardPage() {
   const [medicines, setMedicines] = useState<Medicine[]>([]);
   const [userData, setUserData] = useState<{userId: string, name: string, email: string, phone: string, address: string, dob: string} | null>(null);
@@ -120,6 +178,11 @@ export default function DashboardPage() {
     }
     // Refresh medicines after taking one
     fetchMedicines();
+  }
+
+  function handleLogout() {
+    localStorage.removeItem('token');
+    router.push('/log-in');
   }
 
   return (
@@ -348,6 +411,7 @@ export default function DashboardPage() {
               </div>
             )}
             </li>
+            <li><button className="bg-green-500 px-4 py-1 text-white text-sm rounded-full" onClick={handleLogout}>Logout</button></li>
         </ul>
       </nav>
 
@@ -444,25 +508,10 @@ export default function DashboardPage() {
         {/* RIGHT SIDEBAR */}
         <aside className="w-60 bg-gray-100 p-4 flex flex-col justify-between">
           {/* Calendar */}
-          <div>
-            <h3 className="font-bold text-xl mb-2">CALENDER</h3>
-            <div className="bg-white border rounded p-4">
-              <p className="text-sm font-semibold mb-2">June 2024</p>
-              <div className="grid grid-cols-7 gap-1 text-sm text-center text-gray-700">
-                {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
-                  <div key={i} className="font-bold">{d}</div>
-                ))}
-                {Array.from({ length: 30 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className={`p-1 rounded ${i === 25 ? 'bg-blue-500 text-white' : ''}`}
-                  >
-                    {i + 1}
-                  </div>
-                ))}
-              </div>
+            <div>
+            <h3 className="font-bold text-xl mb-2">CALENDAR</h3>
+            <CalendarWidget />
             </div>
-          </div>
 
           {/* Emergency */}
           <div className="mt-6 text-center">
