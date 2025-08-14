@@ -4,12 +4,13 @@ import { useRouter } from 'next/navigation';
 import axios from 'axios';
 export default function DashboardPage() {
   const [medicines, setMedicines] = useState<Medicine[]>([]);
-  const [userData, setUserData] = useState<{userId: string, name: string, email: string, phone: string} | null>(null);
+  const [userData, setUserData] = useState<{userId: string, name: string, email: string, phone: string, address: string, dob: string} | null>(null);
   const [prescriptions, setPrescriptions] = useState<{id: string, customerName: string, date: string, uploadedFile: string}[]>([]);
   const [currentDate, setCurrentDate] = useState<string>('');
   const [currentTime, setCurrentTime] = useState<string>('');
   const [holdTimeout, setHoldTimeout] = useState<NodeJS.Timeout | null>(null);
   const [showAddMedicineModal, setShowAddMedicineModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const router = useRouter();
   interface TodayDose {
               timeSlot: string;
@@ -30,10 +31,9 @@ export default function DashboardPage() {
     setCurrentDate(new Date().toLocaleDateString());
     setCurrentTime(new Date().toLocaleTimeString());
   }, []);
-useEffect(() => {
-  const token = localStorage.getItem('token');
-  if (!token) router.push('/log-in');
   const fetchId = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) router.push('/log-in');
     try {const res = await axios.get('http://localhost:5000/current-senior-details', {
       withCredentials: true,
       headers: { 'x-access-token': token }
@@ -47,8 +47,9 @@ useEffect(() => {
     router.push('/log-in');
   }
   };
-  fetchId();
-}, []);
+  useEffect(() => {
+    fetchId();
+  }, []);
   const fetchMedicines = async () => {
     if (!userData) return;
     const res = await axios.get(`http://localhost:5000/medicines/today/${userData.userId}`);
@@ -243,7 +244,110 @@ useEffect(() => {
           </li>
           <li><a href="/consultDoctor">Call Doctor</a></li>
           <li><a href="/trackOrder">My Orders</a></li>
-          <li><button className="bg-white text-blue-600 px-4 py-1 rounded-full text-sm font-semibold">Edit Details</button></li>
+            <li>
+            <button
+              className="bg-white text-blue-600 px-4 py-1 rounded-full text-sm font-semibold"
+              onClick={() => setShowEditModal(true)}
+            >
+              Edit Details
+            </button>
+            {showEditModal && (
+              <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+              <div className="bg-white rounded-lg shadow-lg p-6 w-96">
+                <h3 className="text-lg font-bold mb-4 text-black">Edit User Details</h3>
+                <form
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  const form = e.target as HTMLFormElement;
+                  const name = (form.elements.namedItem('name') as HTMLInputElement)?.value || '';
+                  const email = (form.elements.namedItem('email') as HTMLInputElement)?.value || '';
+                  const address = (form.elements.namedItem('address') as HTMLInputElement)?.value || '';
+                  const phone = (form.elements.namedItem('phone') as HTMLInputElement)?.value || '';
+                  const dob = (form.elements.namedItem('dob') as HTMLInputElement)?.value || '';
+                    const updateData: Record<string, string> = { userId: userData?.userId || '' };
+                    if (name) updateData.name = name;
+                    if (email) updateData.email = email;
+                    if (address) updateData.address = address;
+                    if (phone) updateData.phone = phone;
+                    if (dob) updateData.dob = dob;
+                    console.log("Updating user data:", updateData);
+
+                    await axios.put(
+                    `http://localhost:5000/update-senior-profile`,
+                    updateData,
+                    {
+                      withCredentials: true,
+                      headers: { 'x-access-token': localStorage.getItem('token') }
+                    }
+                    );
+                  fetchId(); // Refresh user data after update
+                  setShowEditModal(false);
+                }}
+                >
+                <div className="mb-3">
+                  <label className="block text-sm font-medium mb-1 text-black">Name</label>
+                  <input
+                  name="name"
+                  type="text"
+                  defaultValue={userData?.name}
+                  className="w-full border rounded px-2 py-1 text-black"
+                  />
+                </div>
+                <div className="mb-3">
+                  <label className="block text-sm font-medium mb-1 text-black">Email</label>
+                  <input
+                  name="email"
+                  type="email"
+                  defaultValue={userData?.email}
+                  className="w-full border rounded px-2 py-1 text-black"
+                  />
+                </div>
+                <div className="mb-3">
+                  <label className="block text-sm font-medium mb-1 text-black">Phone</label>
+                  <input
+                  name="phone"
+                  type="text"
+                  defaultValue={userData?.phone}
+                  className="w-full border rounded px-2 py-1 text-black"
+                  />
+                </div>
+                <div className="mb-3">
+                  <label className="block text-sm font-medium mb-1 text-black">Address</label>
+                  <input
+                  name="address"
+                  type="text"
+                  defaultValue={userData?.address}
+                  className="w-full border rounded px-2 py-1 text-black"
+                  />
+                </div>
+                <div className="mb-3">
+                  <label className="block text-sm font-medium mb-1 text-black">Date of Birth</label>
+                  <input
+                    name="dob"
+                    type="date"
+                    className="w-full border rounded px-2 py-1 text-black"
+                  />
+                </div>
+                <div className="flex justify-end gap-2">
+                  <button
+                  type="button"
+                  className="px-3 py-1 rounded bg-gray-200"
+                  onClick={() => setShowEditModal(false)}
+                  >
+                  Cancel
+                  </button>
+                  <button
+                  type="submit"
+                  className="px-3 py-1 rounded bg-blue-600 text-white"
+                  >
+                  Save
+                  </button>
+                </div>
+                </form>
+              </div>
+              </div>
+            )}
+            </li>
         </ul>
       </nav>
 
