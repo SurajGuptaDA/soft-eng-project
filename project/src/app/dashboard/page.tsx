@@ -69,6 +69,11 @@ export default function DashboardPage() {
   const [holdTimeout, setHoldTimeout] = useState<NodeJS.Timeout | null>(null);
   const [showAddMedicineModal, setShowAddMedicineModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [compareModal, setCompareModal] = useState(false);
+  const [selectedPrescription, setSelectedPrescription] = useState<{id: string, customerName: string, date: string, uploadedFile: string, status: string} | null>(null);
+  const [prescriptionResponses, setPrescriptionResponses] = useState<{id: string, prescriptionId: string, pharmacyName: string, totalCost: number, deliveryETA: string}[]>([]);
+  const [selectedResponse, setSelectedResponse] = useState<{id: string, prescriptionId: string, pharmacyName: string, totalCost: number, deliveryETA: string} | null>(null);
+  const [showOrderModal, setShowOrderModal] = useState(false);
   const router = useRouter();
   interface TodayDose {
               timeSlot: string;
@@ -129,6 +134,19 @@ export default function DashboardPage() {
     }
   };
 
+  const fetchPharmacyResponses = async (prescriptionId: string) => {
+    console.log("Fetching pharmacy responses...");
+    // if (!selectedPrescription) return;
+    const res = await axios.get(`http://localhost:5000/get_prescription_response/${prescriptionId}`, {
+      withCredentials: true,
+      headers: { 'x-access-token': localStorage.getItem('token') }
+    });
+    if (res.status === 200) {
+      setPrescriptionResponses(res.data);
+      console.log("Pharmacy Responses:", res.data);
+    }
+  };
+
 // Runs when userData is available
   useEffect(() => {
     if (!userData) return;
@@ -179,6 +197,21 @@ export default function DashboardPage() {
     }
     // Refresh medicines after taking one
     fetchMedicines();
+  }
+
+  async function handleOrder(){
+    if (!selectedPrescription || !selectedResponse) return;
+    const res = await axios.post(`http://localhost:5000/accept_prescription_response`, {
+      responseId: selectedResponse.id
+    }, {
+      withCredentials: true,
+      headers: { 'x-access-token': localStorage.getItem('token') }
+    });
+    if (res.status === 200) {
+      console.log("Order placed successfully:", res.data);
+    }
+    setShowOrderModal(false);
+    fetchPrescriptions(); // Refresh prescriptions after ordering
   }
 
   function handleLogout() {
@@ -488,12 +521,114 @@ export default function DashboardPage() {
                           <option>{prescription.status}</option>
                         </select>
                       </td>
-                      <td className="border px-4 py-2">{prescription.status === 'processing' ? <button className="bg-blue-500 text-white px-4 py-1 rounded">Order</button> : null}</td>
+                      <td className="border px-4 py-2">{prescription.status === 'processing' ? <button onClick={() => {
+                        setCompareModal(true);
+                        setSelectedPrescription(prescription);
+                        fetchPharmacyResponses(prescription.id);
+                      }} className="bg-blue-500 text-white px-4 py-1 rounded">Order</button> : null}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
+            {compareModal && (
+              <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+                <div className="bg-white rounded-lg shadow-lg p-6 w-300">
+                  <div className="px-6 py-10 space-y-10">
+                    {/* Prescription Summary */}
+                    <div>
+                      <h2 className="text-xl font-semibold text-blue-800 mb-2">
+                        📄 Prescription {selectedPrescription ? selectedPrescription.id : ''}
+                      </h2>
+                      <p className="text-sm text-gray-800">
+                        🧾 
+                        <span onClick={() => {if (selectedPrescription) handleViewDownload(selectedPrescription.id)}} className="text-blue-600 cursor-pointer underline">[ View Full Prescription PDF ]</span>
+                      </p>
+                    </div>
+
+                    {/* Compare Pharmacies */}
+                    <div>
+                      <h2 className="text-xl font-semibold text-blue-800 mb-4">🏥 Compare Pharmacies</h2>
+
+                      <div className="overflow-x-auto">
+                        <table className="w-full border border-gray-300 text-sm text-left">
+                          <thead>
+                            <tr className="bg-gray-100">
+                              <th className="p-2 border">Pharmacy Name</th>
+                              <th className="p-2 border">Total Price</th>
+                              <th className="p-2 border">Delivery ETA</th>
+                              <th className="p-2 border">Action</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {prescriptionResponses.map((response) => (
+                              <tr key={response.id}>
+                                <td className="p-2 border">{response.pharmacyName}</td>
+                                <td className="p-2 border">₹{response.totalCost}</td>
+                                <td className="p-2 border">{response.deliveryETA}</td>
+                                <td className="p-2 border">
+                                🛒 <button className="underline text-blue-600" onClick={() => setSelectedResponse(response)}>Select</button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+
+                    {/* Footer Actions */}
+                    <div className="flex flex-wrap justify-between items-center mt-8 gap-4 text-sm font-medium">
+                      <button className="flex items-center gap-1 text-black" onClick={() => setCompareModal(false)}>
+                        🔙 <span>Back</span>
+                      </button>
+
+                      <button className="flex items-center gap-1 text-green-700" onClick={() => {
+                        if (!selectedResponse) {
+                          alert("Please select a pharmacy to order from.");
+                          return;
+                        }
+                        setCompareModal(false);
+                        setShowOrderModal(true);
+                      }}>
+                        ✅ <span>Confirm & Order from Selected Pharmacy</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+            {showOrderModal && (
+              <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+                <div className="bg-white rounded-lg shadow-lg p-6 w-200">
+                    <h2 className="text-3xl font-bold text-blue-800 mb-6 flex items-center gap-2">
+                      <span>🧾</span> Order Summary
+                    </h2>
+                    <ul className="text-gray-700 space-y-2 text-sm sm:text-base">
+                      <li>• Pharmacy: 🏬 {selectedResponse?.pharmacyName}</li>
+                      <li>• Prescription: {selectedResponse?.prescriptionId}</li>
+                      <li>• Total Cost: ₹{selectedResponse?.totalCost}</li>
+                      <li>• Delivery ETA: {selectedResponse?.deliveryETA}</li>
+                      <li>• Delivery Address: 📍 {userData?.address}</li>
+                    </ul>
+
+                    <div className="flex items-center space-x-6 mt-6">
+                      <div className="flex items-center gap-2 text-green-600 font-medium" onClick={() => handleOrder()}>
+                        ✅ Confirm Order
+                      </div>
+                    </div>
+
+                    {/* <p className="text-gray-600 text-sm mt-4">ⓘ You will be notified once the pharmacy confirms your order.</p> */}
+
+                    <button className="mt-6 bg-blue-700 hover:bg-blue-800 text-white font-bold py-2 px-6 rounded" onClick={() => {
+                      setShowOrderModal(false);
+                      setSelectedPrescription(null);
+                      setSelectedResponse(null);
+                    }}>
+                      BACK
+                    </button>
+                  </div>
+              </div>
+            )}
           </section>
           )}
 

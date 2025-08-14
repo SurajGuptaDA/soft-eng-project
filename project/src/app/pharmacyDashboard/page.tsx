@@ -27,9 +27,11 @@ export default function PrescriptionsPage() {
   const [estimatedDelivery, setEstimatedDelivery] = useState<string>("");
   const [acceptedOrders, setAcceptedOrders] = useState<{
     id: string,
+    prescriptionId: string,
     customerName: string,
     totalCost: number,
-    deliveryETA: string
+    deliveredAt: string, 
+    status: string
   }[]>([]);
   const [respondedPrescriptions, setRespondedPrescriptions] = useState<{
     id: string,
@@ -50,10 +52,7 @@ export default function PrescriptionsPage() {
     };
     fetchId();
   }, []);
-  useEffect(() => {
-    if (!userData) return;
-
-    const fetchPrescriptions = async () => {
+  const fetchPrescriptions = async () => {
       const res = await axios.get(`http://localhost:5000/get-all-prescriptions`, {
         withCredentials: true,
         headers: { 'x-access-token': localStorage.getItem('token') }
@@ -83,6 +82,8 @@ export default function PrescriptionsPage() {
         console.log("Accepted Orders:", res.data);
       }
     };
+  useEffect(() => {
+    if (!userData) return;
 
     fetchPrescriptions();
     fetchRespondedPrescriptions();
@@ -131,6 +132,18 @@ export default function PrescriptionsPage() {
     });
   }
 
+  async function handleDispatch(orderId: string) {
+    const res = await axios.post(`http://localhost:5000/dispatch-order`, { orderId }, {
+      withCredentials: true,
+      headers: { 'x-access-token': localStorage.getItem('token') }
+    });
+    if (res.status === 200) {
+      console.log("Order dispatched:", res.data);
+    }
+    fetchAcceptedOrders(); // Refresh accepted orders after dispatch
+    fetchRespondedPrescriptions(); // Refresh responded prescriptions
+  }
+
   function Logout() {
     localStorage.removeItem('token');
     localStorage.removeItem('role');
@@ -144,7 +157,6 @@ export default function PrescriptionsPage() {
 
         <div className="flex items-center gap-6 ml-auto">
           <a href="/pharmacyDashboard" className="hover:underline">Dashboard</a>
-          <a href="#" className="hover:underline">Orders</a>
           <a href="#" className="hover:underline">Help</a>
           <button 
             className="bg-green-400 hover:bg-green-500 px-4 py-1 rounded-full text-white text-sm font-semibold" 
@@ -264,18 +276,41 @@ export default function PrescriptionsPage() {
             <h3 className="text-lg font-semibold text-blue-800 flex items-center gap-2 mb-2">
               📦 Accepted Orders
             </h3>
-            <div className="border rounded-md p-4">
+            <div className="overflow-x-auto border rounded-md text-sm mb-10">
+              <table className="min-w-full table-auto border-collapse">
+                <thead className="bg-gray-100">
+                  <tr>
+                    <th className="border px-4 py-2">Prescription ID</th>
+                    <th className="border px-4 py-2">Customer Name</th>
+                    <th className="border px-4 py-2">Uploaded File</th>
+                    <th className="border px-4 py-2">Total Price</th>
+                    <th className="border px-4 py-2">Delivered At</th>
+                    <th className="border px-4 py-2">Status</th>
+                    <th className="border px-4 py-2">Dispatch</th>
+                  </tr>
+                </thead>
+                <tbody>
               {acceptedOrders.length > 0 ? (
-                <ul className="list-disc list-inside">
-                  {acceptedOrders.map((order) => (
-                    <li key={order.id}>
-                      {`#${order.id}`} - {order.customerName} - ₹{order.totalCost} - {order.deliveryETA}
-                    </li>
-                  ))}
-                </ul>
+                acceptedOrders.map((order) => (
+                  <tr key={order.id}>
+                    <td className="border px-4 py-2">{`#${order.id}`}</td>
+                    <td className="border px-4 py-2">{order.customerName}</td>
+                    <td className="border px-4 py-2 text-blue-600 underline" onClick={() => handleViewDownload(order.prescriptionId)}>View PDF</td>
+                    <td className="border px-4 py-2">{`₹${order.totalCost}`}</td>
+                    <td className="border px-4 py-2">{order.deliveredAt ? new Date(order.deliveredAt).toLocaleDateString() : "Pending"}</td>
+                    <td className="border px-4 py-2">{order.status}</td>
+                    <td className="border px-4 py-2">{order.status === "accepted" ? (<button className="text-blue-600 underline" onClick={() => handleDispatch(order.id)}>Dispatch</button>) : null}</td>
+                  </tr>
+                ))
               ) : (
-                <p>No accepted orders yet.</p>
+                <tr>
+                  <td colSpan={5} className="border px-4 py-2 text-center">
+                    <p>No accepted orders yet.</p>
+                  </td>
+                </tr>
               )}
+                </tbody>
+              </table>
             </div>
         </>
       </div>
