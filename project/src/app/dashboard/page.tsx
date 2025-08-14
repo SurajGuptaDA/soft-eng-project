@@ -63,7 +63,7 @@ function CalendarWidget() {
 export default function DashboardPage() {
   const [medicines, setMedicines] = useState<Medicine[]>([]);
   const [userData, setUserData] = useState<{userId: string, name: string, email: string, phone: string, address: string, dob: string} | null>(null);
-  const [prescriptions, setPrescriptions] = useState<{id: string, customerName: string, date: string, uploadedFile: string}[]>([]);
+  const [prescriptions, setPrescriptions] = useState<{id: string, customerName: string, date: string, uploadedFile: string, status: string}[]>([]);
   const [currentDate, setCurrentDate] = useState<string>('');
   const [currentTime, setCurrentTime] = useState<string>('');
   const [holdTimeout, setHoldTimeout] = useState<NodeJS.Timeout | null>(null);
@@ -125,6 +125,7 @@ export default function DashboardPage() {
     });
     if (res.status === 200) {
       setPrescriptions(res.data);
+      console.log("Prescriptions:", res.data);
     }
   };
 
@@ -182,6 +183,7 @@ export default function DashboardPage() {
 
   function handleLogout() {
     localStorage.removeItem('token');
+    localStorage.removeItem('role');
     router.push('/log-in');
   }
 
@@ -191,7 +193,7 @@ export default function DashboardPage() {
       <nav className="bg-[#4d7cfe] text-white px-6 py-4 flex justify-between items-center">
         <div className="text-xl font-bold">Sandpiper Crossing</div>
         <div className="flex-1"></div>
-        <ul className="flex gap-6 text-sm font-semibold uppercase">
+        <ul className="flex gap-6 text-sm font-semibold">
           <li><a href="#">Home</a></li>
           <li><a href="/uploadPrescription">Upload Prescription</a></li>
           <li>
@@ -468,6 +470,7 @@ export default function DashboardPage() {
                     <th className="border px-4 py-2">DATE UPLOADED</th>
                     <th className="border px-4 py-2">VIEW/DOWNLOAD</th>
                     <th className="border px-4 py-2">STATUS</th>
+                    <th className="border px-4 py-2">ORDER</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -482,11 +485,10 @@ export default function DashboardPage() {
                           className="border rounded px-2 py-1 text-sm"
                           aria-label="Prescription status"
                         >
-                          <option>Processing</option>
-                          <option>Dispatched</option>
-                          <option>Delivered</option>
+                          <option>{prescription.status}</option>
                         </select>
                       </td>
+                      <td className="border px-4 py-2">{prescription.status === 'processing' ? <button className="bg-blue-500 text-white px-4 py-1 rounded">Order</button> : null}</td>
                     </tr>
                   ))}
                 </tbody>

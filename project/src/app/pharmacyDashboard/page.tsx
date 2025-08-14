@@ -139,17 +139,22 @@ export default function PrescriptionsPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Navbar */}
-      <nav className="bg-blue-600 text-white px-6 py-4 flex items-center justify-between">
+      <nav className="bg-blue-600 text-white px-6 py-4 flex items-center">
         <div className="text-lg font-bold">Sandpiper Crossing</div>
-        <div className="flex space-x-6">
+
+        <div className="flex items-center gap-6 ml-auto">
           <a href="/pharmacyDashboard" className="hover:underline">Dashboard</a>
           <a href="#" className="hover:underline">Orders</a>
           <a href="#" className="hover:underline">Help</a>
+          <button 
+            className="bg-green-400 hover:bg-green-500 px-4 py-1 rounded-full text-white text-sm font-semibold" 
+            onClick={Logout}
+          >
+            Logout
+          </button>
         </div>
-        <button className="bg-green-400 hover:bg-green-500 px-4 py-1 rounded-full text-white text-sm font-semibold" onClick={Logout}>
-          Logout
-        </button>
       </nav>
+
 
       <div className="p-8 max-w-5xl mx-auto">
         {/* Incoming Prescriptions */}
@@ -224,19 +229,36 @@ export default function PrescriptionsPage() {
             <h3 className="text-lg font-semibold text-blue-800 flex items-center gap-2 mb-2">
               📦 Responded Prescriptions
             </h3>
-            <div className="border rounded-md p-4">
-              {respondedPrescriptions.length > 0 ? (
-                <ul className="list-disc list-inside">
+            <div className="overflow-x-auto border rounded-md text-sm mb-10">
+              <table className="min-w-full table-auto border-collapse">
+                <thead className="bg-gray-100">
+                  <tr>
+                    <th className="border px-4 py-2">Prescription ID</th>
+                    <th className="border px-4 py-2">Customer Name</th>
+                    <th className="border px-4 py-2">Uploaded File</th>
+                    <th className="border px-4 py-2">Total Price</th>
+                  </tr>
+                </thead>
+                <tbody>
                   {respondedPrescriptions.map((prescription) => (
-                    <li key={prescription.id}>
-                      {`#${prescription.id}`} - {prescription.customerName} - ₹{prescription.totalCost} - {prescription.deliveryETA}
-                    </li>
+                    <tr key={prescription.id}>
+                      <td className="border px-4 py-2">{`#${prescription.id}`}</td>
+                      <td className="border px-4 py-2">{prescription.customerName}</td>
+                      <td className="border px-4 py-2 text-blue-600 underline" onClick={() => handleViewDownload(prescription.id)}>View PDF</td>
+                      <td className="border px-4 py-2">{`₹${prescription.totalCost}`}</td>
+                    </tr>
                   ))}
-                </ul>
-              ) : (
-                <p>No responded prescriptions yet.</p>
-              )}
+                  {respondedPrescriptions.length === 0 && (
+                    <tr>
+                      <td colSpan={5} className="border px-4 py-2 text-center">
+                        <p>No responded prescriptions yet.</p>
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
             </div>
+
         </>
         <>
             <h3 className="text-lg font-semibold text-blue-800 flex items-center gap-2 mb-2">

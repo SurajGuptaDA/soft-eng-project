@@ -26,10 +26,10 @@ export default function UploadPrescriptionPage() {
       })
       .then(response => {
         console.log('Token is valid:', response.data);
-        router.push('/dashboard'); // Redirect to dashboard if token is valid
       })
       .catch(error => {
         console.error('Token verification failed:', error);
+        router.push('/log-in');
       });
     }
   }, [router]);
