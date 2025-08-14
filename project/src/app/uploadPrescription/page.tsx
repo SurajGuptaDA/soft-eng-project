@@ -2,11 +2,12 @@
 import axios from "axios";
 import prescriptionImage from "../../../public/prescription_image.jpg"
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 export default function UploadPrescriptionPage() {
   const [file, setFile] = useState<File | null>(null);
+  const [userData, setUserData] = useState<{userId: string, name: string, email: string, phone: string} | null>(null);
   const router = useRouter();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -15,6 +16,25 @@ export default function UploadPrescriptionPage() {
       setFile(selectedFile);
     }
   };
+  useEffect(() => {
+  const token = localStorage.getItem('token');
+  if (!token) router.push('/log-in');
+  const fetchId = async () => {
+    try {const res = await axios.get('http://localhost:5000/current-senior-details', {
+      withCredentials: true,
+      headers: { 'x-access-token': token }
+    });
+    if (res.status === 200) {
+      setUserData(res.data.userData);
+      console.log("User Data:", res.data.userData);
+    }
+  } catch (error) {
+    console.error("Error fetching user data:", error);
+    router.push('/log-in');
+  }
+  };
+  fetchId();
+}, []);
 
   async function handleSubmit() {
     if (!file) return;
@@ -33,6 +53,7 @@ export default function UploadPrescriptionPage() {
       }
 
       console.log("File uploaded successfully!");
+      router.push('/dashboard'); // redirect to dashboard after successful upload
     } catch (error) {
       console.error(error);
     }
