@@ -77,6 +77,7 @@ export default function DashboardPage() {
   const router = useRouter();
   const [acceptedOrders, setAcceptedOrders] = useState<{id: string, prescriptionId: string, pharmacyName: string, totalCost: number, deliveredETA: string, status: string, updatedOn: string, createdAt: string}[]>([]);
   const [showOrdersModal, setShowOrdersModal] = useState(false);
+  const [showConsultationsModal, setShowConsultationsModal] = useState(false);
   interface TodayDose {
               timeSlot: string;
               taken: boolean;
@@ -237,11 +238,29 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen flex flex-col bg-white">
       {/* NAVBAR */}
-      <nav className="bg-[#4d7cfe] text-white px-6 py-4 flex justify-between items-center">
-        <div className="text-xl font-bold">Sandpiper Crossing</div>
-        <div className="flex-1"></div>
-        <ul className="flex gap-6 text-sm font-semibold">
+      <nav className="relative bg-[#4d7cfe] text-white px-6 py-4 flex items-center">
+  <div className="text-xl font-bold">Sandpiper Crossing</div>
+
+  <ul className="flex-1 flex justify-center gap-6 text-sm font-semibold">
           <li><a href="#">Home</a></li>
+          <li><a href="#">Caregiver</a></li>
+          <li><a href="#" onClick={() => setShowConsultationsModal(true)}>Consultations</a>
+          {showConsultationsModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+              <div className="bg-white rounded-lg shadow-lg p-6 w-96">
+                <h3 className="text-lg font-bold mb-4 text-black">Consultations</h3>
+                {/* Consultation details go here */}
+                <button
+                  type="button"
+                  className="mt-4 bg-blue-500 text-white px-4 py-2 rounded"
+                  onClick={() => setShowConsultationsModal(false)}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          )}
+          </li>
           <li><a href="/uploadPrescription">Upload Prescription</a></li>
           <li>
             <button
@@ -405,9 +424,9 @@ export default function DashboardPage() {
               </div>
             )}
             </li>
-            <li>
-            <button
-              className="bg-white text-blue-600 px-4 py-1 rounded-full text-sm font-semibold"
+        </ul>
+        <button
+              className="bg-white text-blue-600 px-4 py-1 rounded-full text-sm font-semibold mx-2"
               onClick={() => setShowEditModal(true)}
             >
               Edit Details
@@ -508,9 +527,7 @@ export default function DashboardPage() {
               </div>
               </div>
             )}
-            </li>
-            <li><button className="bg-green-500 px-4 py-1 text-white text-sm rounded-full" onClick={handleLogout}>Logout</button></li>
-        </ul>
+        <button className="bg-green-500 px-4 py-1 text-white text-sm rounded-full" onClick={handleLogout}>Logout</button>
       </nav>
 
       {/* MAIN LAYOUT */}

@@ -1,4 +1,52 @@
+"use client";
+import doctorImage from "../../../public/doctor_image.jpg"
+import Image from "next/image";
+import { useRouter } from 'next/navigation';
+import { useState } from "react";
+import axios from "axios";
+
 export default function DoctorConsultPage() {
+  const [showDoctorsModal, setShowDoctorsModal] = useState<boolean>(false);
+  const [doctors, setDoctors] = useState<{id: string, name: string, specialization: string}[]>([]);
+  const router = useRouter();
+
+  function handleLogout() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('role');
+    router.push('/log-in');
+  }
+
+  const fetchDoctors = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/get-doctors", {
+      withCredentials: true,
+      headers: { 'x-access-token': localStorage.getItem('token') }
+    });
+      const data = await response.data;
+      console.log('Fetched doctors:', data);
+      setDoctors(data);
+    } catch (error) {
+      console.error('Error fetching doctors:', error);
+    }
+  };
+
+  const handleConsultationRequest = async (doctorId: string) => {
+    console.log(`Requesting consultation for doctor ID: ${doctorId}`);
+    // Implement the consultation request logic here
+    const res = await axios.get(`http://localhost:5000/request_consultation_senior/${doctorId}`, {
+      withCredentials: true,
+      headers: { 'x-access-token': localStorage.getItem('token') }
+    });
+    if (res.status === 200) {
+      console.log("Consultation request successful");
+      setShowDoctorsModal(false);
+      // Optionally, redirect or show a success message
+    } else {
+      console.error("Failed to request consultation");
+    }
+    
+  };
+
   return (
     <div className="min-h-screen bg-white flex flex-col">
       {/* Navbar */}
@@ -6,18 +54,16 @@ export default function DoctorConsultPage() {
         <div className="text-xl font-bold">Sandpiper Crossing</div>
         <ul className="flex gap-6 text-sm font-semibold">
           <li><a href="/dashboard">Dashboard</a></li>
-          <li><a href="/trackOrder">Orders</a></li>
-          <li><a href="/uploadPrescription">Upload Rx</a></li>
           <li><a href="#">Help</a></li>
         </ul>
-        <button className="bg-green-500 px-4 py-1 text-white text-sm rounded-full">Logout</button>
+        <button className="bg-green-500 px-4 py-1 text-white text-sm rounded-full" onClick={handleLogout}>Logout</button>
       </nav>
 
       {/* Main Content */}
       <div className="flex flex-col items-center justify-center px-8 py-10">
         {/* Header */}
         <h2 className="text-2xl md:text-4xl font-bold text-blue-900 text-center mb-4">
-          Online doctor consultation with <br /> qualified doctors <br /> Starting at ₹XXX
+          Online doctor consultation with <br /> qualified doctors
         </h2>
 
         {/* Benefits Row */}
@@ -37,17 +83,45 @@ export default function DoctorConsultPage() {
         </div>
 
         {/* CTA Button */}
-        <button className="bg-[#f54254] text-white px-8 py-3 rounded-lg text-lg font-semibold mb-10 hover:bg-red-600">
+        <button className="bg-[#f54254] text-white px-8 py-3 rounded-lg text-lg font-semibold mb-10 hover:bg-red-600" onClick={() => {
+          setShowDoctorsModal(true);
+          fetchDoctors();
+          }}>
           Consult Now
         </button>
+        {showDoctorsModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg shadow-lg p-6 w-200">
+              <table className="table-auto border border-blue-500 w-full text-sm text-center">
+                <thead>
+                  <tr className="bg-blue-100">
+                    <th className="border px-4 py-2">SN. NO.</th>
+                    <th className="border px-4 py-2">DOCTOR NAME</th>
+                    <th className="border px-4 py-2">SPECIALIZATION</th>
+                    <th className="border px-4 py-2">ACTION</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {doctors.map((doctor, index) => (
+                    <tr key={doctor.id}>
+                      <td className="border px-4 py-2">{index + 1}</td>
+                      <td className="border px-4 py-2">{doctor.name}</td>
+                      <td className="border px-4 py-2">{doctor.specialization}</td>
+                      <td className="border px-4 py-2">
+                        <button className="bg-blue-500 text-white px-4 py-2 rounded" onClick={() => handleConsultationRequest(doctor.id)}>Request Consultation</button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <button className="mt-4 bg-gray-300 px-4 py-2 rounded" onClick={() => setShowDoctorsModal(false)}>Close</button>
+            </div>
+          </div>
 
+        )}
         {/* Illustration */}
         <div className="w-full flex justify-center mb-12">
-          <img
-            src="/doctor-consult.png"
-            alt="Doctor Consulting"
-            className="max-w-sm md:max-w-md lg:max-w-lg"
-          />
+          <Image src={doctorImage} alt="Doctor Consulting" className="max-w-sm md:max-w-md lg:max-w-lg" />
         </div>
 
         {/* Key Features */}

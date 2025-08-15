@@ -89,6 +89,8 @@ export default function LoginPage() {
         router.push('/pharmacyDashboard');
       } else if (res.data.role === 'delivery') {
         router.push('/deliveryDashboard');
+      } else if (res.data.role === 'doctor') {
+        router.push('/doctorDashboard');
       }
     }
   }

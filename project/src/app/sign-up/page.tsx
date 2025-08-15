@@ -50,6 +50,7 @@ export default function SignupPage() {
     address: '', 
     dob: '', 
     specialization: '', 
+    clinicAddress: '',
     licenceNo: '', 
     pincode: '', 
     pharmacyName: '', 
@@ -188,6 +189,14 @@ export default function SignupPage() {
               placeholder="Licence No."
               required
               onChange={(e) => setFormData({ ...formData, licenceNo: e.target.value })}
+              className="w-full border-2 border-gray-300 rounded-lg px-4 py-2 focus:outline-blue-500"
+            />)}
+            { formData.role === 'doctor' && (
+              <input
+              type="text"
+              placeholder="Clinic Address"
+              required
+              onChange={(e) => setFormData({ ...formData, clinicAddress: e.target.value })}
               className="w-full border-2 border-gray-300 rounded-lg px-4 py-2 focus:outline-blue-500"
             />)}
             { formData.role === 'delivery' && (
