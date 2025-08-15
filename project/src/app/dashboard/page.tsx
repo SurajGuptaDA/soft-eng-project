@@ -78,6 +78,9 @@ export default function DashboardPage() {
   const [acceptedOrders, setAcceptedOrders] = useState<{id: string, prescriptionId: string, pharmacyName: string, totalCost: number, deliveredETA: string, status: string, updatedOn: string, createdAt: string}[]>([]);
   const [showOrdersModal, setShowOrdersModal] = useState(false);
   const [showConsultationsModal, setShowConsultationsModal] = useState(false);
+  const [consultations, setConsultations] = useState<{id: string, doctorName: string, specialization: string, status: boolean, clinicAddress: string | null, requestedTime: string | null, scheduledTime: string | null}[]>([]);
+  const [requestedTime, setRequestedTime] = useState<string>('');
+  const [showTime, setShowTime] = useState<boolean>(false);
   interface TodayDose {
               timeSlot: string;
               taken: boolean;
@@ -229,6 +232,33 @@ export default function DashboardPage() {
     fetchPrescriptions(); // Refresh prescriptions after ordering
   }
 
+  async function fetchConsultations() {
+    if (!userData) return;
+    const res = await axios.get(`http://localhost:5000/get_all_consultation_senior/${userData.userId}`, {
+      withCredentials: true,
+      headers: { 'x-access-token': localStorage.getItem('token') }
+    });
+    if (res.status === 200) {
+      setConsultations(res.data);
+      console.log("Consultations:", res.data);
+    }
+  }
+
+  async function scheduleConsultation(consultId: string, time: string) {
+    const res = await axios.post(`http://localhost:5000/schedule_consultation_senior`, {
+      consultId,
+      time
+    }, {
+      withCredentials: true,
+      headers: { 'x-access-token': localStorage.getItem('token') }
+    });
+    if (res.status === 200) {
+      console.log("Consultation scheduled:", res.data);
+    }
+    setShowTime(false);
+    setRequestedTime('');
+  }
+
   function handleLogout() {
     localStorage.removeItem('token');
     localStorage.removeItem('role');
@@ -244,12 +274,65 @@ export default function DashboardPage() {
   <ul className="flex-1 flex justify-center gap-6 text-sm font-semibold">
           <li><a href="#">Home</a></li>
           <li><a href="#">Caregiver</a></li>
-          <li><a href="#" onClick={() => setShowConsultationsModal(true)}>Consultations</a>
+          <li><a href="#" onClick={() => {setShowConsultationsModal(true); fetchConsultations();}}>Consultations</a>
           {showConsultationsModal && (
             <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-              <div className="bg-white rounded-lg shadow-lg p-6 w-96">
+              <div className="bg-white rounded-lg shadow-lg p-6 w-200">
                 <h3 className="text-lg font-bold mb-4 text-black">Consultations</h3>
-                {/* Consultation details go here */}
+                <div className="overflow-x-auto">
+                  <table className="w-full border border-gray-300 text-sm text-left">
+                    <thead>
+                      <tr className="bg-gray-100 text-black">
+                        <th className="p-2 border">Consultation ID</th>
+                        <th className="p-2 border">Doctor Name</th>
+                        <th className="p-2 border">Specialization</th>
+                        <th className="p-2 border">Status</th>
+                        <th className="p-2 border">Requested Time</th>
+                        <th className="p-2 border">Scheduled Time</th>
+                        <th className="p-2 border">Clinic Address</th>
+                        <th className="p-2 border">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {consultations.map((cons) => (
+                        <tr key={cons.id}>
+                          <td className="p-2 border text-black">{cons.id}</td>
+                          <td className="p-2 border text-black">{cons.doctorName}</td>
+                          <td className="p-2 border text-black">{cons.specialization}</td>
+                          <td className="p-2 border text-black">{cons.status ? 'Accepted' : 'Pending'}</td>
+                          <td className="p-2 border text-black">{cons.requestedTime}</td>
+                          <td className="p-2 border text-black">{cons.scheduledTime}</td>
+                          <td className="p-2 border text-black">{cons.requestedTime && (cons.clinicAddress)}</td>
+                          <td className="p-2 border text-black">
+                            { cons.status && (<button
+                              type="button"
+                              className="text-blue-500 hover:underline"
+                              onClick={() => setShowTime(true)}
+                            >
+                              Schedule
+                            </button>)}
+                            {showTime && (
+                              <>
+                              <input
+                                type="date"
+                                value={requestedTime}
+                                onChange={(e) => setRequestedTime(e.target.value)}
+                              />
+                              <button
+                                type="button"
+                                className="ml-2 bg-blue-500 text-white px-4 py-1 rounded"
+                                onClick={() => scheduleConsultation(cons.id, requestedTime)}
+                              >
+                                Confirm
+                              </button>
+                              </>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  </div>
                 <button
                   type="button"
                   className="mt-4 bg-blue-500 text-white px-4 py-2 rounded"
