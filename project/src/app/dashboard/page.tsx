@@ -75,6 +75,8 @@ export default function DashboardPage() {
   const [selectedResponse, setSelectedResponse] = useState<{id: string, prescriptionId: string, pharmacyName: string, totalCost: number, deliveryETA: string} | null>(null);
   const [showOrderModal, setShowOrderModal] = useState(false);
   const router = useRouter();
+  const [acceptedOrders, setAcceptedOrders] = useState<{id: string, prescriptionId: string, pharmacyName: string, totalCost: number, deliveredETA: string, status: string, updatedOn: string, createdAt: string}[]>([]);
+  const [showOrdersModal, setShowOrdersModal] = useState(false);
   interface TodayDose {
               timeSlot: string;
               taken: boolean;
@@ -144,6 +146,18 @@ export default function DashboardPage() {
     if (res.status === 200) {
       setPrescriptionResponses(res.data);
       console.log("Pharmacy Responses:", res.data);
+    }
+  };
+
+  const fetchAcceptedOrders = async () => {
+    if (!userData) return;
+    const res = await axios.get(`http://localhost:5000/get-accepted-orders`, {
+      withCredentials: true,
+      headers: { 'x-access-token': localStorage.getItem('token') }
+    });
+    if (res.status === 200) {
+      setAcceptedOrders(res.data);
+      console.log("Accepted Orders:", res.data);
     }
   };
 
@@ -341,7 +355,56 @@ export default function DashboardPage() {
             )}
           </li>
           <li><a href="/consultDoctor">Call Doctor</a></li>
-          <li><a href="/trackOrder">My Orders</a></li>
+          <li><a href="#" onClick={() => {
+            setShowOrdersModal(true);
+            fetchAcceptedOrders();
+            }}>My Orders</a>
+            {showOrdersModal && (
+              <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+                <div className="bg-white rounded-lg shadow-lg p-6 w-300">
+                  <h3 className="text-lg font-bold mb-4 text-black">My Orders</h3>
+                  <div className="overflow-x-auto">
+                      <table className="w-full border border-gray-300 text-sm text-left">
+                        <thead>
+                          <tr className="bg-gray-100 text-black">
+                            <th className="p-2 border">Order ID</th>
+                            <th className="p-2 border">View Prescription</th>
+                            <th className="p-2 border">Pharmacy Name</th>
+                            <th className="p-2 border">Total Price</th>
+                            <th className="p-2 border">Created At</th>
+                            <th className="p-2 border">Updated On</th>
+                            <th className="p-2 border">Delivery ETA</th>
+                            <th className="p-2 border">Status</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {acceptedOrders.map((order) => (
+                            <tr key={order.id}>
+                              <td className="p-2 border text-black">{order.id}</td>
+                              <td className="p-2 border">
+                                <span onClick={() => handleViewDownload(order.prescriptionId)} className="underline text-blue-600 cursor-pointer">View</span>
+                              </td>
+                              <td className="p-2 border text-black">{order.pharmacyName}</td>
+                              <td className="p-2 border text-black">₹{order.totalCost}</td>
+                              <td className="p-2 border text-black">{order.createdAt}</td>
+                              <td className="p-2 border text-black">{order.updatedOn}</td>
+                              <td className="p-2 border text-black">{order.deliveredETA}</td>
+                              <td className="p-2 border text-black">{order.status}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  <button
+                    className="mt-4 px-3 py-1 rounded bg-gray-200"
+                    onClick={() => setShowOrdersModal(false)}
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            )}
+            </li>
             <li>
             <button
               className="bg-white text-blue-600 px-4 py-1 rounded-full text-sm font-semibold"
