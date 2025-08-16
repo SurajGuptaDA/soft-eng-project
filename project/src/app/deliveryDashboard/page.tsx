@@ -20,6 +20,27 @@ export default function DeliveriesPage() {
       console.log("Deliveries:", response.data);
     }
     };
+    useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      // If token exists, verify it
+      axios.get('http://localhost:5000/verifyToken', {
+        headers: {
+          'x-access-token': token
+        }
+      })
+      .then(response => {
+        console.log('Token is valid:', response.data);
+      })
+      .catch(error => {
+        console.error('Token verification failed:', error);
+        router.push('/log-in');  
+      });
+    } else {
+      router.push('/log-in');  
+    }
+    
+  }, [router]);
 
   useEffect(() => {
 
@@ -75,7 +96,7 @@ export default function DeliveriesPage() {
         <div className="text-lg font-bold">Sandpiper Crossing</div>
         <div className="flex space-x-6">
           <a href="/deliveryDashboard" className="hover:underline">Dashboard</a>
-          <a href="#" className="hover:underline">Help</a>
+          <a href="/help" className="hover:underline">Help</a>
         </div>
         <button className="bg-green-400 hover:bg-green-500 px-4 py-1 rounded-full text-white text-sm font-semibold" onClick={handleLogout}>
           Logout

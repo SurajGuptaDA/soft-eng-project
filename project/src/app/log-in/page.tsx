@@ -57,7 +57,19 @@ export default function LoginPage() {
       })
       .then(response => {
         console.log('Token is valid:', response.data);
-        router.push('/dashboard'); // Redirect to dashboard if token is valid
+        const role = localStorage.getItem('role');
+        if (!role) {
+          // router.push('/log-in');
+          return;
+        } else if (role === 'senior') {
+          router.push('/dashboard');
+        } else if (role === 'pharmacist') {
+          router.push('/pharmacyDashboard');
+        } else if (role === 'delivery') {
+          router.push('/deliveryDashboard');
+        } else if (role === 'doctor') {
+          router.push('/doctorDashboard');
+        }
       })
       .catch(error => {
         console.error('Token verification failed:', error);

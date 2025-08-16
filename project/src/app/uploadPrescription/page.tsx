@@ -29,9 +29,12 @@ export default function UploadPrescriptionPage() {
       })
       .catch(error => {
         console.error('Token verification failed:', error);
-        router.push('/log-in');
+        router.push('/log-in');  
       });
+    } else {
+      router.push('/log-in');  
     }
+    
   }, [router]);
 
   async function handleSubmit() {

@@ -2,7 +2,7 @@
 import doctorImage from "../../../public/doctor_image.jpg"
 import Image from "next/image";
 import { useRouter } from 'next/navigation';
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 
 export default function DoctorConsultPage() {
@@ -15,6 +15,28 @@ export default function DoctorConsultPage() {
     localStorage.removeItem('role');
     router.push('/log-in');
   }
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      // If token exists, verify it
+      axios.get('http://localhost:5000/verifyToken', {
+        headers: {
+          'x-access-token': token
+        }
+      })
+      .then(response => {
+        console.log('Token is valid:', response.data);
+      })
+      .catch(error => {
+        console.error('Token verification failed:', error);
+        router.push('/log-in');  
+      });
+    } else {
+      router.push('/log-in');  
+    }
+    
+  }, [router]);
 
   const fetchDoctors = async () => {
     try {
@@ -40,6 +62,7 @@ export default function DoctorConsultPage() {
     if (res.status === 200) {
       console.log("Consultation request successful");
       setShowDoctorsModal(false);
+      router.push('/dashboard'); // Redirect to dashboard after request
       // Optionally, redirect or show a success message
     } else {
       console.error("Failed to request consultation");
@@ -54,7 +77,7 @@ export default function DoctorConsultPage() {
         <div className="text-xl font-bold">Sandpiper Crossing</div>
         <ul className="flex gap-6 text-sm font-semibold">
           <li><a href="/dashboard">Dashboard</a></li>
-          <li><a href="#">Help</a></li>
+          <li><a href="/help">Help</a></li>
         </ul>
         <button className="bg-green-500 px-4 py-1 text-white text-sm rounded-full" onClick={handleLogout}>Logout</button>
       </nav>

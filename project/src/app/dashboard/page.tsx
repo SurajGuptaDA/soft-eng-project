@@ -66,7 +66,7 @@ export default function DashboardPage() {
   const [prescriptions, setPrescriptions] = useState<{id: string, customerName: string, date: string, uploadedFile: string, status: string}[]>([]);
   const [currentDate, setCurrentDate] = useState<string>('');
   const [currentTime, setCurrentTime] = useState<string>('');
-  const [holdTimeout, setHoldTimeout] = useState<NodeJS.Timeout | null>(null);
+  // const [holdTimeout, setHoldTimeout] = useState<NodeJS.Timeout | null>(null);
   const [showAddMedicineModal, setShowAddMedicineModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [compareModal, setCompareModal] = useState(false);
@@ -81,6 +81,8 @@ export default function DashboardPage() {
   const [consultations, setConsultations] = useState<{id: string, doctorName: string, specialization: string, status: boolean, clinicAddress: string | null, requestedTime: string | null, scheduledTime: string | null}[]>([]);
   const [requestedTime, setRequestedTime] = useState<string>('');
   const [showTime, setShowTime] = useState<boolean>(false);
+  const [lastConsultation, setLastConsultation] = useState<{id: string, doctorName: string} | null>(null);
+  const [medsTakenThisWeek, setMedsTakenThisWeek] = useState<{taken: number, total: number} | null>(null);
   interface TodayDose {
               timeSlot: string;
               taken: boolean;
@@ -165,14 +167,34 @@ export default function DashboardPage() {
     }
   };
 
+  const fetchLastConsultation = async () => {
+    if (!userData) return;
+    const res = await axios.get(`http://localhost:5000/get-last-consultation`, {
+      withCredentials: true,
+      headers: { 'x-access-token': localStorage.getItem('token') }
+    });
+    if (res.status === 200) {
+      setLastConsultation(res.data);
+      console.log("Last Consultation:", res.data);
+    }
+  };
+  const fetchMedsTakenThisWeek = async () => {
+    if (!userData) return;
+    const res = await axios.get(`http://localhost:5000/medicines-taken-this-week/${userData.userId}`);
+    if (res.status === 200) {
+      setMedsTakenThisWeek(res.data);
+      console.log("Medicines taken this week:", res.data);
+    }
+  };
+
 // Runs when userData is available
   useEffect(() => {
     if (!userData) return;
 
-    
-
     fetchMedicines();
     fetchPrescriptions();
+    fetchLastConsultation();
+    fetchMedsTakenThisWeek();
   }, [userData]);
 
   async function handleViewDownload(id: string) {
@@ -191,15 +213,15 @@ export default function DashboardPage() {
     link.click();
   }
 
-  async function handleEmergency(){
-    const res = await axios.post(`http://localhost:5000/emergency/trigger`, {location: 'New Delhi'}, {
-      withCredentials: true,
-      headers: { 'x-access-token': localStorage.getItem('token') }
-    });
-    if (res.status === 200) {
-      console.log("Emergency request sent");
-    }
-  }
+  // async function handleEmergency(){
+  //   const res = await axios.post(`http://localhost:5000/emergency/trigger`, {location: 'New Delhi'}, {
+  //     withCredentials: true,
+  //     headers: { 'x-access-token': localStorage.getItem('token') }
+  //   });
+  //   if (res.status === 200) {
+  //     console.log("Emergency request sent");
+  //   }
+  // }
   async function takeMedicine(medicineId: string, timeSlot: string, taken: boolean) {
     if (taken) {
       console.log("Medicine already taken for this slot");
@@ -215,6 +237,7 @@ export default function DashboardPage() {
     }
     // Refresh medicines after taking one
     fetchMedicines();
+    fetchMedsTakenThisWeek();
   }
 
   async function handleOrder(){
@@ -257,6 +280,7 @@ export default function DashboardPage() {
     }
     setShowTime(false);
     setRequestedTime('');
+    fetchConsultations();
   }
 
   function handleLogout() {
@@ -273,7 +297,6 @@ export default function DashboardPage() {
 
   <ul className="flex-1 flex justify-center gap-6 text-sm font-semibold">
           <li><a href="#">Home</a></li>
-          <li><a href="#">Caregiver</a></li>
           <li><a href="#" onClick={() => {setShowConsultationsModal(true); fetchConsultations();}}>Consultations</a>
           {showConsultationsModal && (
             <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
@@ -304,7 +327,7 @@ export default function DashboardPage() {
                           <td className="p-2 border text-black">{cons.scheduledTime}</td>
                           <td className="p-2 border text-black">{cons.requestedTime && (cons.clinicAddress)}</td>
                           <td className="p-2 border text-black">
-                            { cons.status && (<button
+                            { cons.status && cons.requestedTime === null && (<button
                               type="button"
                               className="text-blue-500 hover:underline"
                               onClick={() => setShowTime(true)}
@@ -642,7 +665,7 @@ export default function DashboardPage() {
                       <div className="flex items-center gap-4">
                         <span className="text-green-500 text-xl" onClick={() => takeMedicine(med.trackId, dose.timeSlot, dose.taken)}>✔️</span>
                         <span key={index} className={`text-sm ${dose.taken ? 'text-green-500' : 'text-red-500'}`}>
-                          {med.dosage} - {dose.timeSlot}
+                          {med.medicineName} - {med.dosage} - {dose.timeSlot}
                         </span>
                       </div>
                       <span className="bg-gray-200 px-4 py-1 rounded">PILL IMAGE</span>
@@ -799,8 +822,12 @@ export default function DashboardPage() {
           <section>
             <h2 className="text-2xl font-bold text-blue-900 mb-2 text-center">HEALTH OVERVIEW</h2>
             <ul className="list-disc list-inside text-gray-700 text-lg">
-              <li>Meds Taken This Week: 6/7</li>
-              <li>Last Consultation: 3 days ago with Dr. Sharma</li>
+              {medsTakenThisWeek ? (
+                <li>Meds Taken This Week: {medsTakenThisWeek.taken}/{medsTakenThisWeek.total}</li>
+              ) : (
+                <li>No medicine data available for this week.</li>
+              )}
+              {lastConsultation && <li>Last Consultation with {lastConsultation.doctorName}</li>}
             </ul>
           </section>
         </main>
@@ -813,8 +840,7 @@ export default function DashboardPage() {
             <CalendarWidget />
             </div>
 
-          {/* Emergency */}
-          <div className="mt-6 text-center">
+          {/* <div className="mt-6 text-center">
             <p className="text-red-600 font-bold uppercase">Emergency Button</p>
             <button
               className="bg-red-600 text-white font-semibold px-4 py-2 rounded mt-2"
@@ -841,7 +867,7 @@ export default function DashboardPage() {
             >
               PRESS ME <br /> FOR 3 SEC
             </button>
-          </div>
+          </div> */}
         </aside>
       </div>
     </div>

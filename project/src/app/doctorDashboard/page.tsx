@@ -16,6 +16,28 @@ export default function DoctorDashboard() {
         router.push('/log-in');
     }
 
+    useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      // If token exists, verify it
+      axios.get('http://localhost:5000/verifyToken', {
+        headers: {
+          'x-access-token': token
+        }
+      })
+      .then(response => {
+        console.log('Token is valid:', response.data);
+      })
+      .catch(error => {
+        console.error('Token verification failed:', error);
+        router.push('/log-in');  
+      });
+    } else {
+      router.push('/log-in');  
+    }
+    
+  }, [router]);
+
     async function scheduleConsultation(consultationId: string, scheduledTime: string) {
         console.log("Scheduling consultation with ID:", consultationId, "at time:", scheduledTime);
         const response = await axios.post(`http://localhost:5000/schedule-consultation-doctor`, {
@@ -97,7 +119,7 @@ export default function DoctorDashboard() {
             <div className="text-lg font-bold">Sandpiper Crossing</div>
             <div className="flex space-x-6">
             <a href="/doctorDashboard" className="hover:underline">Dashboard</a>
-            <a href="#" className="hover:underline">Help</a>
+            <a href="/help" className="hover:underline">Help</a>
             </div>
             <button className="bg-green-400 hover:bg-green-500 px-4 py-1 rounded-full text-white text-sm font-semibold" onClick={handleLogout}>
             Logout

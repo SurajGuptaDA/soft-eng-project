@@ -52,6 +52,28 @@ export default function PrescriptionsPage() {
     };
     fetchId();
   }, []);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      // If token exists, verify it
+      axios.get('http://localhost:5000/verifyToken', {
+        headers: {
+          'x-access-token': token
+        }
+      })
+      .then(response => {
+        console.log('Token is valid:', response.data);
+      })
+      .catch(error => {
+        console.error('Token verification failed:', error);
+        router.push('/log-in');  
+      });
+    } else {
+      router.push('/log-in');  
+    }
+    
+  }, [router]);
   const fetchPrescriptions = async () => {
       const res = await axios.get(`http://localhost:5000/get-all-prescriptions`, {
         withCredentials: true,
@@ -130,6 +152,7 @@ export default function PrescriptionsPage() {
     .catch(err => {
       console.error("Error sending prescription response:", err);
     });
+    fetchRespondedPrescriptions();
   }
 
   async function handleDispatch(orderId: string) {
@@ -157,7 +180,7 @@ export default function PrescriptionsPage() {
 
         <div className="flex items-center gap-6 ml-auto">
           <a href="/pharmacyDashboard" className="hover:underline">Dashboard</a>
-          <a href="#" className="hover:underline">Help</a>
+          <a href="/help" className="hover:underline">Help</a>
           <button 
             className="bg-green-400 hover:bg-green-500 px-4 py-1 rounded-full text-white text-sm font-semibold" 
             onClick={Logout}
@@ -227,7 +250,7 @@ export default function PrescriptionsPage() {
               <ul className="list-disc list-inside py-2">
                 {medicines.map((med, index) => (
                   <li key={index}>
-                    {med.name} - {` - ₹${med.price}`} <button className="text-red-600" onClick={() => handleRemoveMedicine(index)}>❌</button>
+                    {med.name} - ₹{med.price} <button className="text-red-600" onClick={() => handleRemoveMedicine(index)}>❌</button>
                   </li>
                 ))}
               </ul>
